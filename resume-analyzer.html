@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Candidate Evaluation Report — Resume Analyzer</title>
+<style>
+  :root{
+    --ink:#0a0a0a;
+    --paper:#ffffff;
+    --paper-off:#f4f4f2;
+    --line:#0a0a0a;
+    --line-soft:#c9c9c6;
+    --gray:#5a5a58;
+    --gray-light:#8a8a86;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  body{
+    background:var(--paper-off);
+    color:var(--ink);
+    font-family:"Times New Roman", Times, Georgia, serif;
+    line-height:1.5;
+    padding:40px 20px 80px;
+  }
+
+  .sheet{
+    max-width:980px;
+    margin:0 auto;
+    background:var(--paper);
+    border:2px solid var(--line);
+    box-shadow: 8px 8px 0 rgba(10,10,10,0.08);
+    position:relative;
+  }
+
+  /* ===== MASTHEAD ===== */
+  .masthead{
+    border-bottom:3px double var(--line);
+    padding:28px 40px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+  }
+  .masthead .title-block .kicker{
+    font-size:11px;
+    letter-spacing:4px;
+    text-transform:uppercase;
+    color:var(--gray);
+  }
+  .masthead .title-block h1{
+    font-size:34px;
+    font-weight:normal;
+    letter-spacing:1px;
+    margin-top:6px;
+  }
+  .masthead .meta{
+    text-align:right;
+    font-size:12px;
+    color:var(--gray);
+    line-height:1.7;
+  }
+  .masthead .meta span{ color:var(--ink); font-variant-numeric: tabular-nums; }
+
+  /* ===== FORM SECTION ===== */
+  .intake{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    border-bottom:1px solid var(--line);
+  }
+  @media (max-width:760px){ .intake{ grid-template-columns:1fr; } }
+
+  .exhibit{
+    padding:26px 32px;
+  }
+  .exhibit + .exhibit{
+    border-left:1px solid var(--line-soft);
+  }
+  @media (max-width:760px){
+    .exhibit + .exhibit{ border-left:none; border-top:1px solid var(--line-soft); }
+  }
+
+  .exhibit-label{
+    font-size:11px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--gray);
+    display:flex;
+    justify-content:space-between;
+    margin-bottom:6px;
+  }
+  .exhibit-label b{ color:var(--ink); letter-spacing:3px; }
+  .exhibit p.hint{
+    font-size:13px;
+    color:var(--gray);
+    font-style:italic;
+    margin-bottom:14px;
+  }
+
+  textarea{
+    width:100%;
+    min-height:230px;
+    resize:vertical;
+    border:1px solid var(--line);
+    background:var(--paper);
+    font-family:"Times New Roman", Times, Georgia, serif;
+    font-size:15px;
+    line-height:1.6;
+    color:var(--ink);
+    padding:14px;
+  }
+  textarea:focus{
+    outline:none;
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+  textarea::placeholder{ color:#a8a8a4; font-style:italic; }
+
+  .field-footer{
+    display:flex;
+    justify-content:space-between;
+    margin-top:6px;
+    font-size:11px;
+    color:var(--gray-light);
+  }
+
+  .upload-row{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+  .upload-btn{
+    font-family:"Times New Roman", Times, serif;
+    display:inline-block;
+    border:1px solid var(--ink);
+    background:var(--paper);
+    color:var(--ink);
+    padding:9px 18px;
+    font-size:12px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+  }
+  .upload-btn:hover{ background:var(--ink); color:var(--paper); }
+  .upload-btn.disabled{ opacity:.5; pointer-events:none; }
+  .file-name{
+    font-size:12px;
+    color:var(--gray);
+    font-style:italic;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    max-width:240px;
+  }
+  .upload-divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin:2px 0 14px;
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--gray-light);
+  }
+  .upload-divider::before, .upload-divider::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line-soft);
+  }
+
+  /* ===== ACTION BAR ===== */
+  .action-bar{
+    padding:20px 32px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    border-bottom:1px solid var(--line);
+    background:var(--paper-off);
+  }
+  .action-bar .note{
+    font-size:12px;
+    color:var(--gray);
+    max-width:520px;
+  }
+
+  button#submitBtn{
+    font-family:"Times New Roman", Times, serif;
+    background:var(--ink);
+    color:var(--paper);
+    border:1px solid var(--ink);
+    padding:14px 30px;
+    font-size:14px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    cursor:pointer;
+    transition:background .15s ease, color .15s ease;
+    white-space:nowrap;
+  }
+  button#submitBtn:hover:not(:disabled){
+    background:var(--paper);
+    color:var(--ink);
+  }
+  button#submitBtn:disabled{
+    opacity:.5;
+    cursor:default;
+  }
+
+  /* ===== REPORT SECTION ===== */
+  #report{ display:none; padding:36px 40px 44px; position:relative; }
+
+  .report-heading{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:1px solid var(--line-soft);
+    padding-bottom:14px;
+    margin-bottom:22px;
+  }
+  .report-heading h2{
+    font-weight:normal;
+    font-size:20px;
+    letter-spacing:1px;
+  }
+  .report-heading .score-tag{
+    font-size:13px;
+    color:var(--gray);
+    text-align:right;
+  }
+  .report-heading .score-tag b{ font-size:26px; color:var(--ink); display:block; }
+
+  .summary-line{
+    font-size:16px;
+    line-height:1.7;
+    margin-bottom:26px;
+    padding-left:16px;
+    border-left:3px solid var(--ink);
+  }
+
+  /* Stamp */
+  .stamp{
+    position:absolute;
+    top:30px;
+    right:40px;
+    border:4px double var(--ink);
+    padding:10px 18px;
+    font-size:20px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    transform:rotate(-7deg);
+    color:var(--ink);
+    opacity:0.88;
+    filter:url(#roughen);
+  }
+  @media (max-width:760px){ .stamp{ position:static; transform:rotate(-3deg); display:inline-block; margin-bottom:16px; } }
+
+  /* Category table */
+  .category{
+    border-top:1px solid var(--line-soft);
+    padding:16px 0;
+  }
+  .category:last-of-type{ border-bottom:1px solid var(--line-soft); }
+  .category-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    margin-bottom:8px;
+  }
+  .category-head h3{
+    font-size:16px;
+    font-weight:normal;
+    letter-spacing:.5px;
+  }
+  .category-head .cat-score{
+    font-size:13px;
+    color:var(--gray);
+  }
+  .bar-track{
+    width:100%;
+    height:6px;
+    background:var(--paper-off);
+    border:1px solid var(--line-soft);
+    margin-bottom:10px;
+  }
+  .bar-fill{ height:100%; background:var(--ink); }
+  .category p.notes{ font-size:14px; margin-bottom:8px; }
+  .category ul.evidence{ list-style:none; padding-left:0; }
+  .category ul.evidence li{
+    font-size:13px;
+    color:var(--gray);
+    padding-left:14px;
+    position:relative;
+    margin-bottom:4px;
+  }
+  .category ul.evidence li::before{
+    content:"—";
+    position:absolute; left:0; top:0;
+  }
+
+  .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:0;
+    margin-top:26px;
+    border-top:3px double var(--line);
+  }
+  @media (max-width:760px){ .two-col{ grid-template-columns:1fr; } }
+  .two-col > div{ padding:20px 24px; }
+  .two-col > div:first-child{ border-right:1px solid var(--line-soft); }
+  @media (max-width:760px){ .two-col > div:first-child{ border-right:none; border-bottom:1px solid var(--line-soft); } }
+  .two-col h4{
+    font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--gray);
+    margin-bottom:10px;
+  }
+  .two-col ul{ padding-left:18px; }
+  .two-col li{ font-size:14px; margin-bottom:6px; }
+
+  .recommendation{
+    margin-top:26px;
+    padding:20px 24px;
+    background:var(--paper-off);
+    border:1px solid var(--line);
+  }
+  .recommendation h4{
+    font-size:12px; letter-spacing:2px; text-transform:uppercase; color:var(--gray); margin-bottom:8px;
+  }
+  .recommendation p{ font-size:15px; }
+
+  .footer-sign{
+    margin-top:32px;
+    display:flex;
+    justify-content:space-between;
+    font-size:11px;
+    color:var(--gray-light);
+    border-top:1px solid var(--line-soft);
+    padding-top:14px;
+  }
+
+  /* Loading state */
+  .loader{
+    display:none;
+    padding:50px 40px;
+    text-align:center;
+    font-size:14px;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:var(--gray);
+  }
+  .loader .dots::after{
+    content:"";
+    display:inline-block;
+    animation:dots 1.4s steps(4,end) infinite;
+  }
+  @keyframes dots{
+    0%{content:"";} 25%{content:".";} 50%{content:"..";} 75%{content:"...";}
+  }
+
+  .error-box{
+    display:none;
+    margin:24px 40px;
+    border:1px solid var(--ink);
+    padding:16px 20px;
+    font-size:14px;
+    background:var(--paper-off);
+  }
+</style>
+</head>
+<body>
+
+<!-- SVG filter used only to give the stamp a slightly worn ink texture -->
+<svg width="0" height="0" style="position:absolute">
+  <filter id="roughen">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" result="noise"/>
+    <feDisplacementMap in="SourceGraphic" in2="noise" scale="2.2"/>
+  </filter>
+</svg>
+
+<div class="sheet">
+
+  <div class="masthead">
+    <div class="title-block">
+      <div class="kicker">Applicant Tracking &amp; Screening</div>
+      <h1>Candidate Evaluation Report</h1>
+    </div>
+    <div class="meta">
+      FORM NO. <span id="fileNo">RA-0001</span><br>
+      DATE FILED <span id="fileDate"></span>
+    </div>
+  </div>
+
+  <div class="intake">
+    <div class="exhibit">
+      <div class="exhibit-label"><b>Exhibit A</b><span>Job Requisition</span></div>
+      <p class="hint">Paste the job description and, if you have it, a short line on the company.</p>
+      <textarea id="jobInput" placeholder="e.g. Software Development Engineer I — Backend
+Company: ...
+Responsibilities: build and maintain REST APIs, work with SQL databases...
+Requirements: Data Structures & Algorithms, one backend language (Java/Node/Python), Git, CGPA 7.0+..."></textarea>
+      <div class="field-footer"><span>Plain text</span><span id="jobCount">0 characters</span></div>
+    </div>
+
+    <div class="exhibit">
+      <div class="exhibit-label"><b>Exhibit B</b><span>Candidate Resume</span></div>
+      <p class="hint">Upload a PDF or Word resume, or paste the text directly below — skills, certifications, internships, CGPA, projects, achievements.</p>
+      <div class="upload-row">
+        <label class="upload-btn" id="uploadBtnLabel" for="resumeFile">Upload PDF / DOCX</label>
+        <input type="file" id="resumeFile" accept=".pdf,.doc,.docx" hidden>
+        <span class="file-name" id="fileName">No file selected</span>
+      </div>
+      <div class="upload-divider">or paste below</div>
+      <textarea id="resumeInput" placeholder="Paste resume content here..."></textarea>
+      <div class="field-footer"><span id="resumeSource">Plain text</span><span id="resumeCount">0 characters</span></div>
+    </div>
+  </div>
+
+  <div class="action-bar">
+    <div class="note">The panel evaluates skills, certifications, internships, projects, eligibility/CGPA, and achievements against the requisition — the way a recruiting screener would.</div>
+    <button id="submitBtn">Submit for Review</button>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+
+  <div class="loader" id="loader">Panel reviewing submission<span class="dots"></span></div>
+
+  <div id="report"></div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script>
+  if(window['pdfjsLib']){
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  document.getElementById('fileDate').textContent = new Date().toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+  document.getElementById('fileNo').textContent = 'RA-' + Math.floor(1000 + Math.random()*8999);
+
+  const jobInput = document.getElementById('jobInput');
+  const resumeInput = document.getElementById('resumeInput');
+  const jobCount = document.getElementById('jobCount');
+  const resumeCount = document.getElementById('resumeCount');
+  const submitBtn = document.getElementById('submitBtn');
+  const loader = document.getElementById('loader');
+  const report = document.getElementById('report');
+  const errorBox = document.getElementById('errorBox');
+
+  jobInput.addEventListener('input', () => jobCount.textContent = jobInput.value.length + ' characters');
+  resumeInput.addEventListener('input', () => {
+    resumeCount.textContent = resumeInput.value.length + ' characters';
+    resumeSource.textContent = 'Plain text';
+  });
+
+  const resumeFile = document.getElementById('resumeFile');
+  const fileNameEl = document.getElementById('fileName');
+  const uploadBtnLabel = document.getElementById('uploadBtnLabel');
+  const resumeSource = document.getElementById('resumeSource');
+
+  async function extractPdfText(file){
+    const buf = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+    let text = '';
+    for(let i = 1; i <= pdf.numPages; i++){
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(it => it.str).join(' ') + '\n';
+    }
+    return text;
+  }
+
+  async function extractDocxText(file){
+    const buf = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer: buf });
+    return result.value;
+  }
+
+  resumeFile.addEventListener('change', async () => {
+    const file = resumeFile.files[0];
+    if(!file) return;
+
+    errorBox.style.display = 'none';
+    fileNameEl.textContent = file.name;
+    uploadBtnLabel.classList.add('disabled');
+    uploadBtnLabel.textContent = 'Reading…';
+
+    const lower = file.name.toLowerCase();
+
+    try{
+      let text = '';
+      if(lower.endsWith('.pdf')){
+        text = await extractPdfText(file);
+      }else if(lower.endsWith('.docx')){
+        text = await extractDocxText(file);
+      }else if(lower.endsWith('.doc')){
+        throw new Error('.doc is not supported — please save as .docx or PDF, or paste the text directly.');
+      }else{
+        throw new Error('Unsupported file type. Upload a .pdf or .docx file.');
+      }
+
+      text = text.trim();
+      if(!text){
+        throw new Error('No readable text found in that file (it may be a scanned image). Try pasting the resume text instead.');
+      }
+
+      resumeInput.value = text;
+      resumeCount.textContent = resumeInput.value.length + ' characters';
+      resumeSource.textContent = 'From file: ' + file.name;
+
+    }catch(err){
+      console.error(err);
+      errorBox.textContent = err.message || 'Could not read that file.';
+      errorBox.style.display = 'block';
+      fileNameEl.textContent = 'No file selected';
+    }finally{
+      uploadBtnLabel.classList.remove('disabled');
+      uploadBtnLabel.textContent = 'Upload PDF / DOCX';
+      resumeFile.value = '';
+    }
+  });
+
+  // Repairs a JSON string that was cut off mid-way (e.g. hit a token limit) by
+  // closing any string/array/object that never got closed, so JSON.parse can
+  // still recover a usable (if slightly shorter) report instead of failing.
+  function repairTruncatedJson(text){
+    let result = '';
+    const stack = [];
+    let inString = false;
+    let escape = false;
+
+    for(let i = 0; i < text.length; i++){
+      const ch = text[i];
+      result += ch;
+      if(escape){ escape = false; continue; }
+      if(ch === '\\'){ escape = true; continue; }
+      if(ch === '"'){ inString = !inString; continue; }
+      if(inString) continue;
+      if(ch === '{' || ch === '[') stack.push(ch);
+      else if(ch === '}' || ch === ']') stack.pop();
+    }
+
+    if(inString) result += '"';
+    result = result.replace(/,\s*$/, ''); // drop a trailing dangling comma
+    // If we end right after a key's colon with no value, drop that dangling key.
+    result = result.replace(/,?\s*"[^"]*"\s*:\s*$/, '');
+    result = result.replace(/,\s*$/, '');
+
+    while(stack.length){
+      const open = stack.pop();
+      result += open === '{' ? '}' : ']';
+    }
+    return result;
+  }
+
+  function escapeHtml(str){
+    return (str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function verdictLabel(v){
+    const map = {
+      strong: 'Strong Match',
+      moderate: 'Moderate Match',
+      weak: 'Weak Match'
+    };
+    return map[v] || v;
+  }
+
+  function renderReport(data){
+    const verdict = (data.verdict || '').toLowerCase();
+    let stampText = 'MODERATE MATCH';
+    if(verdict.includes('strong')) stampText = 'STRONG MATCH';
+    else if(verdict.includes('weak')) stampText = 'WEAK MATCH';
+    else if(verdict.includes('moderate')) stampText = 'MODERATE MATCH';
+
+    let html = '';
+    html += `<div class="stamp">${escapeHtml(stampText)}</div>`;
+    html += `<div class="report-heading">
+      <h2>Panel Findings</h2>
+      <div class="score-tag">Overall Fit<b>${Number(data.overallScore ?? 0)}/100</b></div>
+    </div>`;
+    html += `<div class="summary-line">${escapeHtml(data.summary || '')}</div>`;
+
+    (data.categories || []).forEach(cat => {
+      const score = Math.max(0, Math.min(100, Number(cat.score ?? 0)));
+      html += `<div class="category">
+        <div class="category-head">
+          <h3>${escapeHtml(cat.name || '')}</h3>
+          <span class="cat-score">${score}/100</span>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${score}%"></div></div>
+        <p class="notes">${escapeHtml(cat.notes || '')}</p>`;
+      if(cat.evidence && cat.evidence.length){
+        html += `<ul class="evidence">` + cat.evidence.map(e => `<li>${escapeHtml(e)}</li>`).join('') + `</ul>`;
+      }
+      html += `</div>`;
+    });
+
+    html += `<div class="two-col">
+      <div>
+        <h4>Strengths Noted</h4>
+        <ul>${(data.strengths||[]).map(s=>`<li>${escapeHtml(s)}</li>`).join('') || '<li>None recorded</li>'}</ul>
+      </div>
+      <div>
+        <h4>Gaps Identified</h4>
+        <ul>${(data.gaps||[]).map(s=>`<li>${escapeHtml(s)}</li>`).join('') || '<li>None recorded</li>'}</ul>
+      </div>
+    </div>`;
+
+    html += `<div class="recommendation">
+      <h4>Panel Recommendation</h4>
+      <p>${escapeHtml(data.recommendation || '')}</p>
+    </div>`;
+
+    html += `<div class="footer-sign">
+      <span>Evaluated by Automated Screening Panel</span>
+      <span>Confidential — for applicant use only</span>
+    </div>`;
+
+    report.innerHTML = html;
+    report.style.display = 'block';
+  }
+
+  async function analyze(){
+    const jd = jobInput.value.trim();
+    const resume = resumeInput.value.trim();
+
+    errorBox.style.display = 'none';
+    report.style.display = 'none';
+
+    if(!jd || !resume){
+      errorBox.textContent = 'Both the job description (Exhibit A) and the resume (Exhibit B) are required before the panel can review.';
+      errorBox.style.display = 'block';
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Reviewing…';
+    loader.style.display = 'block';
+
+    const systemPrompt = `You are a senior technical recruiter and hiring panel for software engineering roles (SDE / backend / AI-ML / full-stack). You evaluate a candidate's resume against a specific job description the way a real recruiting team does: checking skills, certifications, internships/experience, projects, eligibility (including CGPA if the job mentions one), and achievements.
+
+Be honest and specific, not generic, but you are writing under a STRICT LENGTH BUDGET — the whole reply must fit in well under 1000 tokens, so brevity is mandatory, not optional.
+
+Hard limits, follow exactly:
+- "summary": max 2 short sentences.
+- Each category "notes": max 1 short sentence (under 18 words).
+- Each category "evidence": at most 2 bullets, each under 10 words.
+- "strengths" and "gaps": at most 3 bullets each, under 10 words each.
+- "recommendation": max 2 short sentences.
+- No filler words, no repeating the job title, no restating the resume verbatim.
+
+If CGPA or an eligibility cutoff is not mentioned in the job description, score that category based on general academic strength shown in the resume and briefly note that no cutoff was specified.
+
+Respond with ONLY a single valid JSON object — no markdown fences, no preamble, no commentary outside the JSON, and make sure it is complete and properly closed. Use exactly this shape:
+
+{
+  "verdict": "strong" | "moderate" | "weak",
+  "overallScore": <integer 0-100>,
+  "summary": "<max 2 short sentences>",
+  "categories": [
+    {"name": "Skills", "score": <0-100>, "notes": "<short>", "evidence": ["<short bullet>", "<short bullet>"]},
+    {"name": "Certifications", "score": <0-100>, "notes": "<short>", "evidence": ["<short bullet>"]},
+    {"name": "Internships & Experience", "score": <0-100>, "notes": "<short>", "evidence": ["<short bullet>"]},
+    {"name": "Projects", "score": <0-100>, "notes": "<short>", "evidence": ["<short bullet>"]},
+    {"name": "Eligibility & CGPA", "score": <0-100>, "notes": "<short>", "evidence": ["<short bullet>"]},
+    {"name": "Achievements", "score": <0-100>, "notes": "<short>", "evidence": ["<short bullet>"]}
+  ],
+  "strengths": ["<short bullet>", "<short bullet>"],
+  "gaps": ["<short bullet>", "<short bullet>"],
+  "recommendation": "<max 2 short sentences>"
+}`;
+
+    const userPrompt = `JOB DESCRIPTION / COMPANY CONTEXT:\n${jd}\n\nCANDIDATE RESUME:\n${resume}`;
+
+    try{
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-6",
+          max_tokens: 1000,
+          system: systemPrompt,
+          messages: [{ role: "user", content: userPrompt }]
+        })
+      });
+
+      if(!response.ok){
+        throw new Error("Request failed with status " + response.status);
+      }
+
+      const data = await response.json();
+      const textBlock = (data.content || []).find(b => b.type === 'text');
+      if(!textBlock){ throw new Error("No response text returned."); }
+
+      let cleaned = textBlock.text.trim().replace(/^```json/i, '').replace(/^```/,'').replace(/```$/,'').trim();
+
+      let parsed;
+      try{
+        parsed = JSON.parse(cleaned);
+      }catch(parseErr){
+        // The reply may have been cut off before it finished (hit the token limit).
+        // Try to repair it by closing any unfinished string/array/object instead of failing outright.
+        const repaired = repairTruncatedJson(cleaned);
+        parsed = JSON.parse(repaired);
+      }
+      renderReport(parsed);
+
+    }catch(err){
+      console.error(err);
+      errorBox.textContent = 'The panel could not complete the review (' + err.message + '). Try pasting a shorter job description / resume, or submit again.';
+      errorBox.style.display = 'block';
+    }finally{
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit for Review';
+      loader.style.display = 'none';
+    }
+  }
+
+  submitBtn.addEventListener('click', analyze);
+</script>
+
+</body>
+</html>
