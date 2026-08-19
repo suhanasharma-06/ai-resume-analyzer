@@ -1,5 +1,16 @@
 # AI Resume Analyzer — Candidate Evaluation Report
 
+## 🚧 Project Status: UI/Design Only — Live AI Analysis NOT Working Yet
+
+**This is currently a frontend/design showcase, not a fully functional tool.** The interface, resume upload (PDF/DOCX), and layout all work — but clicking **"Submit for Review"** will fail right now because the AI backend has not been deployed and connected yet.
+
+A backend (`/backend` folder in this repo) exists to fix this, but as of now it has **not been deployed**, so there is no live server for the frontend to talk to. Until that's done:
+- ✅ UI, styling, and file upload work fully
+- ❌ "Submit for Review" will show an error — this is expected, not a bug
+- 📌 See `backend/README.md` for the deployment steps needed to make analysis work end-to-end
+
+---
+
 A single-file HTML tool that reviews a resume against a job description the way a recruiting panel would — scoring skills, certifications, internships, projects, CGPA/eligibility, and achievements, then returning a verdict (Strong / Moderate / Weak Match) with evidence and a recommendation.
 
 Styled as a formal black-and-white "case file" — Times New Roman throughout, a stamped verdict, and a scored breakdown by category.
@@ -28,12 +39,15 @@ I'm sharing it as-is rather than passing it off as something it isn't. If you're
 
 ## Running It
 
-This project calls the Anthropic API directly from the browser. That only works out of the box inside a Claude.ai artifact, where the API key is handled for you — if you open `resume-analyzer.html` standalone or host it elsewhere, the API call will fail because there's no key configured (and a browser can't safely hold one anyway).
+This tool calls a backend (`/backend`) at `/analyze`, which holds the Anthropic API key server-side and forwards requests to Claude. The frontend never talks to Anthropic directly, so no key is exposed in the browser.
 
-To make this a real standalone/deployable app:
-1. Add a small backend (Node/Express or Python/Flask) with one `/analyze` route
-2. Store your Anthropic API key server-side (e.g. in a `.env` file, **never committed to Git**)
-3. Have the frontend call your backend instead of `api.anthropic.com` directly
+**Right now that backend is not deployed**, so `BACKEND_URL` in `index.html` is still a placeholder and the live GitHub Pages link cannot run real analysis yet.
+
+To make it work end-to-end:
+1. Get an Anthropic API key from [console.anthropic.com](https://console.anthropic.com)
+2. Deploy the `/backend` folder (e.g. on Render — free tier works) — full steps in `backend/README.md`
+3. Paste the deployed backend URL into `BACKEND_URL` near the top of `index.html`
+4. Push the change — GitHub Pages rebuilds automatically
 
 ## Disclaimer
 
